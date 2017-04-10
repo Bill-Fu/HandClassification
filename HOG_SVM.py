@@ -4,11 +4,10 @@ import os
 from sklearn import svm
 from sklearn import metrics
 from sklearn import cross_validation
-from hog.histogram import hog
 
-rootDir = "C:/Users/fuhao/Desktop/dataset/dataset"
-trainDir = "C:/Users/fuhao/Desktop/dataset/dataset/train"
-testDir = "C:/Users/fuhao/Desktop/dataset/dataset/test"
+rootDir = "C:/Users/wb-fh265231/Desktop/dataset"
+trainDir = "C:/Users/wb-fh265231/Desktop/dataset/train"
+testDir = "C:/Users/wb-fh265231/Desktop/dataset/test"
 
 win_size = (64, 128)
 
@@ -34,7 +33,7 @@ for i in range(len(labels)):
         img = cv2.resize(img, win_size)
         HOG = desc.compute(img)
         train_X.append(HOG.tolist())
-    print str(i)
+    # print str(i)
 
 # Convert training data list to array
 train_X = np.array(train_X)
@@ -52,7 +51,7 @@ for i in range(len(labels)):
         img = cv2.resize(img, win_size)
         HOG = desc.compute(img)
         test_uniform_X.append(HOG.tolist())
-    print str(i)
+    # print str(i)
 
 test_uniform_X = np.array(test_uniform_X)
 test_uniform_Y = np.array(test_uniform_Y)
@@ -69,7 +68,7 @@ for i in range(len(labels)):
         img = cv2.resize(img, win_size)
         HOG = desc.compute(img)
         test_complex_X.append(HOG.tolist())
-    print str(i)
+    # print str(i)
 
 test_complex_X = np.array(test_complex_X)
 test_complex_Y = np.array(test_complex_Y)
@@ -78,19 +77,19 @@ test_complex_X = test_complex_X.reshape((len(test_complex_X),len(test_complex_X[
 
 ###############################################################################
 
-# X_train, X_test, Y_train, Y_test = cross_validation.train_test_split(train_X,train_Y,test_size=0.4)
-
-clf = svm.SVC(gamma=0.001)
+# train_X, test_X, train_Y, test_Y = cross_validation.train_test_split(train_X,train_Y,test_size=0.3)
+para_C = 0.01
+clf = svm.LinearSVC(C=para_C)
 clf.fit(train_X, train_Y)
 
-
+print "Parameter C:" + str(para_C)
 print "Accuracy of uniform testing data:" + str(clf.score(test_uniform_X, test_uniform_Y))
 print "Accuracy of complex testing data:" + str(clf.score(test_complex_X, test_complex_Y))
-
+# print "Accuracy of cross_validation data:" + str(clf.score(test_X, test_Y))
 
 def Classify(name, desc, clf):
     img = cv2.imread(name,cv2.IMREAD_GRAYSCALE)
     img = cv2.resize(img, (64, 128))
     HOG = desc.compute(img)
     HOG = HOG.reshape((1,3780))
-    print clf.predict(HOG)
+    print labels[clf.predict(HOG)[0]]
