@@ -159,10 +159,10 @@ print "Confusion matrix of complex testing data"
 print metrics.confusion_matrix(expected_complex_knn, predicted_complex_knn)
 """
 ###############################################################################
-############### Libsvm SVM Training and Testing ###############################
+############### Libsvm SVM Training, Testing and Model Saving #################
 ###############################################################################
 
-param_mod = '-t 0 -c 0.015 -b 1 -m 1000'
+param_mod = '-t 0 -c 0.0105 -b 1 -m 1000'
 param_pred = '-b 1'
 prob = svm_problem(train_Y_libsvm, train_X_libsvm)
 param = svm_parameter(param_mod)
@@ -174,6 +174,8 @@ print "Model parameters:" + param_mod
 print "Prediction parameters:" + param_pred
 print "Accuracy of uniform testing data:" + str(p_acc_uniform[0])
 print "Accuracy of complex testing data:" + str(p_acc_complex[0])
+
+svm_save_model('handGestureClassificationModel', model)
 
 def Classify(name, desc, clf):
     img = cv2.imread(name,cv2.IMREAD_GRAYSCALE)
