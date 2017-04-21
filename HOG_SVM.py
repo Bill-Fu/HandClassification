@@ -10,10 +10,12 @@ from sklearn import metrics
 from sklearn import cross_validation
 # 生成预测结果准确率的混淆矩阵
 from sklearn import metrics
+# 导入Libsvm的python库
+from svmutil import *
 
-rootDir = "C:/Users/fuhao/Desktop/dataset_clean"
-trainDir = "C:/Users/fuhao/Desktop/dataset_clean/train"
-testDir = "C:/Users/fuhao/Desktop/dataset_clean/test"
+rootDir = "C:/Users/wb-fh265231/Dropbox/graduation_project/dataset_clean"
+trainDir = "C:/Users/wb-fh265231/Dropbox/graduation_project/dataset_clean/train"
+testDir = "C:/Users/wb-fh265231/Dropbox/graduation_project/dataset_clean/test"
 
 win_size = (64, 128)
 
@@ -30,6 +32,8 @@ labels = os.listdir(trainDir)
 desc = cv2.HOGDescriptor()
 
 ###############################################################################
+############################# Training Data ###################################
+###############################################################################
 
 # Get features and labels of training data
 for i in range(len(labels)):
@@ -38,15 +42,22 @@ for i in range(len(labels)):
         img = cv2.imread(os.path.join(trainDir,labels[i],image),cv2.IMREAD_GRAYSCALE)
         img = cv2.resize(img, win_size)
         HOG = desc.compute(img)
+        HOG = HOG.reshape((len(HOG),))
         train_X.append(HOG.tolist())
     # print str(i)
 
-# Convert training data list to array
+# training data for Libsvm
+train_X_libsvm = train_X
+train_Y_libsvm = train_Y
+
+# Convert training data from list to array
 train_X = np.array(train_X)
 train_Y = np.array(train_Y)
 
-train_X = train_X.reshape((len(train_X),len(train_X[0])))
+# train_X = train_X.reshape((len(train_X),len(train_X[0])))
 
+###############################################################################
+########################## Uniform Testing Data ###############################
 ###############################################################################
 
 # Get features and labels of uniform testing data
@@ -56,14 +67,22 @@ for i in range(len(labels)):
         img = cv2.imread(os.path.join(testDir,labels[i],"uniform",image),cv2.IMREAD_GRAYSCALE)
         img = cv2.resize(img, win_size)
         HOG = desc.compute(img)
+        HOG = HOG.reshape((len(HOG),))
         test_uniform_X.append(HOG.tolist())
     # print str(i)
 
+# uniform testing data for Libsvm
+test_uniform_X_libsvm = test_uniform_X
+test_uniform_Y_libsvm = test_uniform_Y
+
+# Convert uniform testing data from list to array
 test_uniform_X = np.array(test_uniform_X)
 test_uniform_Y = np.array(test_uniform_Y)
 
-test_uniform_X = test_uniform_X.reshape((len(test_uniform_X),len(test_uniform_X[0])))
+# test_uniform_X = test_uniform_X.reshape((len(test_uniform_X),len(test_uniform_X[0])))
 
+###############################################################################
+######################## Complex Testing Data #################################
 ###############################################################################
 
 # Get features and labels of complex testing data
@@ -73,16 +92,24 @@ for i in range(len(labels)):
         img = cv2.imread(os.path.join(testDir,labels[i],"complex",image),cv2.IMREAD_GRAYSCALE)
         img = cv2.resize(img, win_size)
         HOG = desc.compute(img)
+        HOG = HOG.reshape((len(HOG),))
         test_complex_X.append(HOG.tolist())
     # print str(i)
 
+# complex testing data for Libsvm
+test_complex_X_libsvm = test_complex_X
+test_complex_Y_libsvm = test_complex_Y
+
+# Convert complex testing data from list to array
 test_complex_X = np.array(test_complex_X)
 test_complex_Y = np.array(test_complex_Y)
 
-test_complex_X = test_complex_X.reshape((len(test_complex_X),len(test_complex_X[0])))
+# test_complex_X = test_complex_X.reshape((len(test_complex_X),len(test_complex_X[0])))
 
 print "Data for training load successfully\n"
-
+"""
+###############################################################################
+############## Scikit-learn SVM Training and Testing ##########################
 ###############################################################################
 
 # train_X, test_X, train_Y, test_Y = cross_validation.train_test_split(train_X,train_Y,test_size=0.3)
@@ -108,8 +135,10 @@ print "Confusion matrix of complex testing data"
 print metrics.confusion_matrix(expected_complex, predicted_complex)
 
 ###############################################################################
+################ Scikit-learn kNN Training and Testing ########################
+###############################################################################
 
-para_n_neighbors = 3
+para_n_neighbors = 11
 para_weights = 'distance'
 clf_knn = neighbors.KNeighborsClassifier(para_n_neighbors, weights=para_weights)
 clf_knn.fit(train_X, train_Y)
@@ -130,7 +159,25 @@ print "Confusion matrix of uniform testing data"
 print metrics.confusion_matrix(expected_uniform_knn, predicted_uniform_knn)
 print "Confusion matrix of complex testing data"
 print metrics.confusion_matrix(expected_complex_knn, predicted_complex_knn)
+"""
+###############################################################################
+############### Libsvm SVM Training, Testing and Model Saving #################
+###############################################################################
 
+param_mod = '-t 0 -c 0.0105 -b 1 -m 1000'
+param_pred = '-b 1'
+prob = svm_problem(train_Y_libsvm, train_X_libsvm)
+param = svm_parameter(param_mod)
+model = svm_train(prob, param)
+p_labs_uniform, p_acc_uniform, p_vals_uniform = svm_predict(test_uniform_Y_libsvm, test_uniform_X_libsvm, model, param_pred)
+p_labs_complex, p_acc_complex, p_vals_complex = svm_predict(test_complex_Y_libsvm, test_complex_X_libsvm, model, param_pred)
+
+print "Model parameters:" + param_mod
+print "Prediction parameters:" + param_pred
+print "Accuracy of uniform testing data:" + str(p_acc_uniform[0])
+print "Accuracy of complex testing data:" + str(p_acc_complex[0])
+
+svm_save_model('handGestureClassificationModel', model)
 
 def Classify(name, desc, clf):
     img = cv2.imread(name,cv2.IMREAD_GRAYSCALE)
