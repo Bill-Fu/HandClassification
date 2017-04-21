@@ -11,9 +11,9 @@ from sklearn import cross_validation
 # 生成预测结果准确率的混淆矩阵
 from sklearn import metrics
 
-rootDir = "C:/Users/wb-fh265231/Desktop/dataset"
-trainDir = "C:/Users/wb-fh265231/Desktop/dataset/train"
-testDir = "C:/Users/wb-fh265231/Desktop/dataset/test"
+rootDir = "C:/Users/fuhao/Desktop/dataset_clean"
+trainDir = "C:/Users/fuhao/Desktop/dataset_clean/train"
+testDir = "C:/Users/fuhao/Desktop/dataset_clean/test"
 
 win_size = (64, 128)
 
@@ -81,7 +81,7 @@ test_complex_Y = np.array(test_complex_Y)
 
 test_complex_X = test_complex_X.reshape((len(test_complex_X),len(test_complex_X[0])))
 
-print "Data for training load successfully"
+print "Data for training load successfully\n"
 
 ###############################################################################
 
@@ -90,6 +90,7 @@ para_C = 0.007
 clf_svm = svm.LinearSVC(C=para_C)
 clf_svm.fit(train_X, train_Y)
 
+print "SVM training result:"
 print "Parameter C:" + str(para_C)
 print "Accuracy of uniform testing data:" + str(clf_svm.score(test_uniform_X, test_uniform_Y))
 print "Accuracy of complex testing data:" + str(clf_svm.score(test_complex_X, test_complex_Y))
@@ -107,12 +108,13 @@ print "Confusion matrix of complex testing data"
 print metrics.confusion_matrix(expected_complex, predicted_complex)
 
 ###############################################################################
-"""
+
 para_n_neighbors = 3
 para_weights = 'distance'
 clf_knn = neighbors.KNeighborsClassifier(para_n_neighbors, weights=para_weights)
 clf_knn.fit(train_X, train_Y)
 
+print "\nkNN training result:"
 print "Parameter k:" + str(para_n_neighbors)
 print "Parameter weights:" + str(para_weights)
 print "Accuracy of uniform testing data:" + str(clf_knn.score(test_uniform_X, test_uniform_Y))
@@ -128,7 +130,7 @@ print "Confusion matrix of uniform testing data"
 print metrics.confusion_matrix(expected_uniform_knn, predicted_uniform_knn)
 print "Confusion matrix of complex testing data"
 print metrics.confusion_matrix(expected_complex_knn, predicted_complex_knn)
-"""
+
 
 def Classify(name, desc, clf):
     img = cv2.imread(name,cv2.IMREAD_GRAYSCALE)
